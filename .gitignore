@@ -1,0 +1,51 @@
+# Laravel & PHP
+/vendor/
+/node_modules/
+/public/storage
+/storage/*.key
+.env
+.env.*
+Homestead.json
+Homestead.yaml
+.phpunit.result.cache
+/storage/app/public
+/storage/framework/
+/storage/logs/
+/database/*.sqlite
+/database/database.sqlite
+/database/database.sqlite3
+/database/testing.sqlite
+
+# Composer
+composer.lock
+composer.phar
+
+# NPM
+npm-debug.log
+yarn-error.log
+
+# IDE & OS
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.DS_Store
+Thumbs.db
+
+# Build
+/public/css/*.map
+/public/js/*.map
+/public/hot
+/public/mix-manifest.json
+/public/build/
+
+# Misc
+*.log
+*.bak
+*.tmp
+*.swp
+
+# Custom
+/resources/css/app.css
+/public/css/app.css
+/public/css/tailwind.css

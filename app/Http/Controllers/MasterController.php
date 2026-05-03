@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\Unit;
+use App\Models\StockMovement;
+use App\Models\ProductUnitConversion;
+use Illuminate\Http\Request;
+
+class MasterController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = Product::with(['category', 'unitConversions']);
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('code', 'like', '%' . $request->search . '%')
+                    ->orWhere('barcode', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        $products = $query->orderBy('name')->paginate(15)->withQueryString();
+        $categories = Category::orderBy('name')->get();
+
+        return view('master.index', compact('products', 'categories'));
+    }
+
+    public function create()
+    {
+        $categories = Category::orderBy('name')->get();
+        $units = Unit::orderBy('name')->get();
+        return view('master.create', compact('categories', 'units'));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'code'              => 'required|string|unique:products,code',
+            'name'              => 'required|string|max:255',
+            'category_id'       => 'required|exists:categories,id',
+            'retail_price'      => 'required|numeric|min:0',
+            'wholesale_price'   => 'required|numeric|min:0',
+            'min_wholesale_qty' => 'required|integer|min:1',
+            'stock'             => 'required|integer|min:0',
+            'min_stock'         => 'required|integer|min:0',
+            'unit'              => 'required|string|max:50',
+            'barcode'           => 'nullable|string|max:100',
+            'description'       => 'nullable|string',
+            'is_active'         => 'boolean',
+            // Konversi satuan
+            'conversions'                    => 'nullable|array',
+            'conversions.*.unit_name'        => 'required_with:conversions|string|max:50',
+            'conversions.*.conversion_qty'   => 'required_with:conversions|numeric|min:0.0001',
+            'conversions.*.sell_price'       => 'required_with:conversions|numeric|min:0',
+            'conversions.*.buy_price'        => 'nullable|numeric|min:0',
+        ]);
+
+        $data['is_active'] = $request->boolean('is_active', true);
+        $conversions = $data['conversions'] ?? [];
+        unset($data['conversions']);
+
+        $product = Product::create($data);
+
+        foreach ($conversions as $conv) {
+            if (!empty($conv['unit_name'])) {
+                $product->unitConversions()->create([
+                    'unit_name'      => $conv['unit_name'],
+                    'conversion_qty' => $conv['conversion_qty'],
+                    'sell_price'     => $conv['sell_price'],
+                    'buy_price'      => $conv['buy_price'] ?? 0,
+                ]);
+            }
+        }
+
+        return redirect()->route('master.index')->with('success', 'Produk berhasil ditambahkan.');
+    }
+
+    public function edit(Product $product)
+    {
+        $categories = Category::orderBy('name')->get();
+        $units = Unit::orderBy('name')->get();
+        $product->load('unitConversions');
+        return view('master.edit', compact('product', 'categories', 'units'));
+    }
+
+    public function update(Request $request, Product $product)
+    {
+        $data = $request->validate([
+            'code'              => 'required|string|unique:products,code,' . $product->id,
+            'name'              => 'required|string|max:255',
+            'category_id'       => 'required|exists:categories,id',
+            'retail_price'      => 'required|numeric|min:0',
+            'wholesale_price'   => 'required|numeric|min:0',
+            'min_wholesale_qty' => 'required|integer|min:1',
+            'min_stock'         => 'required|integer|min:0',
+            'unit'              => 'required|string|max:50',
+            'barcode'           => 'nullable|string|max:100',
+            'description'       => 'nullable|string',
+            // Konversi satuan
+            'conversions'                    => 'nullable|array',
+            'conversions.*.unit_name'        => 'required_with:conversions|string|max:50',
+            'conversions.*.conversion_qty'   => 'required_with:conversions|numeric|min:0.0001',
+            'conversions.*.sell_price'       => 'required_with:conversions|numeric|min:0',
+            'conversions.*.buy_price'        => 'nullable|numeric|min:0',
+        ]);
+
+        $data['is_active'] = $request->boolean('is_active', true);
+        $conversions = $data['conversions'] ?? [];
+        unset($data['conversions']);
+
+        $product->update($data);
+
+        // Sync konversi: hapus semua lalu buat ulang
+        $product->unitConversions()->delete();
+        foreach ($conversions as $conv) {
+            if (!empty($conv['unit_name'])) {
+                $product->unitConversions()->create([
+                    'unit_name'      => $conv['unit_name'],
+                    'conversion_qty' => $conv['conversion_qty'],
+                    'sell_price'     => $conv['sell_price'],
+                    'buy_price'      => $conv['buy_price'] ?? 0,
+                ]);
+            }
+        }
+
+        return redirect()->route('master.index')->with('success', 'Produk berhasil diperbarui.');
+    }
+
+    public function destroy(Product $product)
+    {
+        $product->update(['is_active' => false]);
+        return redirect()->route('master.index')->with('success', 'Produk berhasil dinonaktifkan.');
+    }
+}

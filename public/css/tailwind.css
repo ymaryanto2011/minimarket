@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+* {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Custom utilities */
+.btn-primary {
+    padding: 0.5rem 1rem;
+    background-color: #2563eb;
+    color: #fff;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    border: 0;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-secondary {
+    padding: 0.5rem 1rem;
+    background-color: #d1d5db;
+    color: #1f2937;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    border: 0;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background-color: #9ca3af;
+}
+
+.btn-danger {
+    padding: 0.5rem 1rem;
+    background-color: #dc2626;
+    color: #fff;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    border: 0;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-success {
+    padding: 0.5rem 1rem;
+    background-color: #16a34a;
+    color: #fff;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    border: 0;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-success:hover {
+    background-color: #15803d;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.input-field:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 1.5rem;
+}
+
+.card-header {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.badge-info {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-success {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: #dcfce7;
+    color: #15803d;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-warning {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: #fef9c3;
+    color: #a16207;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-danger {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.h-screen-minus-header {
+    min-height: calc(100vh - 140px);
+}
