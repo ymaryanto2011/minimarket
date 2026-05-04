@@ -6,51 +6,57 @@
 
 @section('content')
 <script>
-    window.__quotations = {!! json_encode($quotations->map(function($q) {
-        return [
-            'id' => $q->id,
-            'quotation_no' => $q->quotation_no,
-            'to_name' => $q->to_name,
-            'date' => $q->date ? $q->date->format('Y-m-d') : null,
-            'valid_until' => $q->valid_until ? $q->valid_until->format('Y-m-d') : null,
-            'subtotal' => (float) $q->subtotal,
-            'discount' => (float) $q->discount,
-            'tax_rate' => (float) $q->tax_rate,
-            'tax_amount' => (float) $q->tax_amount,
-            'total' => (float) $q->total,
-            'notes' => $q->notes,
-            'status' => $q->status,
-            'created_by' => $q->created_by,
-            'creator' => $q->creator ? ['name' => $q->creator->name] : null,
-            'items' => $q->items->map(fn($i) => [
-                'id' => $i->id,
-                'product_id' => $i->product_id,
-                'product_name' => $i->product_name,
-                'unit_label' => $i->unit_label,
-                'conversion_qty' => (float) $i->conversion_qty,
-                'qty' => $i->qty,
-                'unit_price' => (float) $i->unit_price,
-                'discount_pct' => (float) $i->discount_pct,
-                'total' => (float) $i->total,
-            ])->values()->all(),
-        ];
-    })->values(), JSON_HEX_TAG) !!};
-    window.__products = {!! json_encode($products->map(fn($p) => [
-        'id'           => $p->id,
-        'code'         => $p->code,
-        'name'         => $p->name,
-        'retail_price' => (float) $p->retail_price,
-        'wholesale_price' => (float) $p->wholesale_price,
-        'unit'         => $p->unit,
-        'unit_conversions' => $p->allUnits(),
-    ])->values(), JSON_HEX_TAG) !!};
-    window.__store = {!! json_encode($store ? [
-        'name' => $store->name,
-        'address' => $store->address,
-        'phone' => $store->phone,
-        'owner_name' => $store->owner_name,
-        'bank_accounts' => $store->bank_accounts ?? [],
-    ] : null, JSON_HEX_TAG) !!};
+    window.__quotations = {
+        !!json_encode($quotations - > map(function($q) {
+            return [
+                'id' => $q - > id,
+                'quotation_no' => $q - > quotation_no,
+                'to_name' => $q - > to_name,
+                'date' => $q - > date ? $q - > date - > format('Y-m-d') : null,
+                'valid_until' => $q - > valid_until ? $q - > valid_until - > format('Y-m-d') : null,
+                'subtotal' => (float) $q - > subtotal,
+                'discount' => (float) $q - > discount,
+                'tax_rate' => (float) $q - > tax_rate,
+                'tax_amount' => (float) $q - > tax_amount,
+                'total' => (float) $q - > total,
+                'notes' => $q - > notes,
+                'status' => $q - > status,
+                'created_by' => $q - > created_by,
+                'creator' => $q - > creator ? ['name' => $q - > creator - > name] : null,
+                'items' => $q - > items - > map(fn($i) => [
+                    'id' => $i - > id,
+                    'product_id' => $i - > product_id,
+                    'product_name' => $i - > product_name,
+                    'unit_label' => $i - > unit_label,
+                    'conversion_qty' => (float) $i - > conversion_qty,
+                    'qty' => $i - > qty,
+                    'unit_price' => (float) $i - > unit_price,
+                    'discount_pct' => (float) $i - > discount_pct,
+                    'total' => (float) $i - > total,
+                ]) - > values() - > all(),
+            ];
+        }) - > values(), JSON_HEX_TAG) !!
+    };
+    window.__products = {
+        !!json_encode($products - > map(fn($p) => [
+            'id' => $p - > id,
+            'code' => $p - > code,
+            'name' => $p - > name,
+            'retail_price' => (float) $p - > retail_price,
+            'wholesale_price' => (float) $p - > wholesale_price,
+            'unit' => $p - > unit,
+            'unit_conversions' => $p - > allUnits(),
+        ]) - > values(), JSON_HEX_TAG) !!
+    };
+    window.__store = {
+        !!json_encode($store ? [
+            'name' => $store - > name,
+            'address' => $store - > address,
+            'phone' => $store - > phone,
+            'owner_name' => $store - > owner_name,
+            'bank_accounts' => $store - > bank_accounts ?? [],
+        ] : null, JSON_HEX_TAG) !!
+    };
     window.__nextNo = @json($nextNo);
     window.__csrfToken = @json(csrf_token());
     window.__routeStore = @json(route('quotation.store'));
@@ -284,16 +290,28 @@
                                 <template x-for="(item, idx) in form.items" :key="idx">
                                     <tr class="border-t hover:bg-gray-50">
                                         <td class="py-1.5 px-2 text-center text-gray-400" x-text="idx + 1"></td>
-                                        <td class="py-1.5 px-2">
-                                            <select x-model="item.product_id" @change="onProductChange(idx)"
-                                                class="input-field text-xs py-1 w-full">
-                                                <option value="">-- Pilih Barang --</option>
-                                                <template x-for="p in products" :key="p.id">
-                                                    <option :value="p.id"
-                                                        x-text="`[${p.code}] ${p.name}`"
-                                                        :selected="String(p.id) === String(item.product_id)"></option>
+                                        <td class="py-1.5 px-2" style="position:relative">
+                                            <input type="text"
+                                                x-model="item.product_search"
+                                                @focus="activeDropdownIdx = idx"
+                                                @input="activeDropdownIdx = idx"
+                                                @keydown.escape="activeDropdownIdx = -1"
+                                                @blur="setTimeout(() => { if(activeDropdownIdx === idx) activeDropdownIdx = -1 }, 200)"
+                                                placeholder="Ketik kode / nama barang..."
+                                                class="input-field text-xs py-1 w-full"
+                                                autocomplete="off">
+                                            <div x-show="activeDropdownIdx === idx"
+                                                style="position:absolute; z-index:9999; top:100%; left:0; min-width:100%; width:300px; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:220px; overflow-y:auto">
+                                                <template x-for="p in products.filter(p => !item.product_search || ('['+p.code+'] '+p.name).toLowerCase().includes(item.product_search.toLowerCase()))" :key="p.id">
+                                                    <div @mousedown.prevent="item.product_id = String(p.id); activeDropdownIdx = -1; onProductChange(idx)"
+                                                        style="padding:8px 12px; font-size:12px; cursor:pointer; border-bottom:1px solid #f3f4f6"
+                                                        :style="String(item.product_id) === String(p.id) ? 'background:#eff6ff; color:#1d4ed8; font-weight:600' : 'color:#374151'"
+                                                        x-text="'['+p.code+'] '+p.name">
+                                                    </div>
                                                 </template>
-                                            </select>
+                                                <div x-show="products.filter(p => !item.product_search || ('['+p.code+'] '+p.name).toLowerCase().includes(item.product_search.toLowerCase())).length === 0"
+                                                    style="padding:12px; font-size:12px; color:#9ca3af; text-align:center">Barang tidak ditemukan</div>
+                                            </div>
                                         </td>
                                         <td class="py-1.5 px-2">
                                             {{-- Unit dropdown: auto-populated from selected product's conversions --}}
@@ -636,8 +654,11 @@
             taxAmount: 0,
             grandTotal: 0,
 
+            activeDropdownIdx: -1,
+
             initApp() {
-                /* nothing */ },
+                /* nothing */
+            },
 
             /* ---- Computed counts ---- */
             get activeStatuses() {
@@ -670,6 +691,7 @@
                 return {
                     product_id: '',
                     product_name: '',
+                    product_search: '',
                     unit_label: '',
                     conversion_qty: 1,
                     qty: 1,
@@ -682,7 +704,12 @@
             /* Return the list of all available units for a product (base + conversions) */
             getProductUnits(pid) {
                 const prod = this.products.find(p => String(p.id) === String(pid));
-                return prod ? (prod.unit_conversions || [{ unit_name: prod.unit, conversion_qty: 1, sell_price: prod.retail_price, buy_price: 0 }]) : [];
+                return prod ? (prod.unit_conversions || [{
+                    unit_name: prod.unit,
+                    conversion_qty: 1,
+                    sell_price: prod.retail_price,
+                    buy_price: 0
+                }]) : [];
             },
 
             defaultForm() {
@@ -724,16 +751,20 @@
                     notes: q.notes || '',
                     discount: parseFloat(q.discount) || 0,
                     tax_rate: parseFloat(q.tax_rate) || 0,
-                    items: (q.items || []).map(it => ({
-                        product_id: String(it.product_id || ''),
-                        product_name: it.product_name || '',
-                        unit_label: it.unit_label || '',
-                        conversion_qty: parseFloat(it.conversion_qty) || 1,
-                        qty: it.qty,
-                        unit_price: parseFloat(it.unit_price),
-                        discount_pct: parseFloat(it.discount_pct) || 0,
-                        total: parseFloat(it.total),
-                    })),
+                    items: (q.items || []).map(it => {
+                        const prod = this.products.find(p => String(p.id) === String(it.product_id));
+                        return {
+                            product_id: String(it.product_id || ''),
+                            product_name: it.product_name || '',
+                            product_search: prod ? `[${prod.code}] ${prod.name}` : (it.product_name || ''),
+                            unit_label: it.unit_label || '',
+                            conversion_qty: parseFloat(it.conversion_qty) || 1,
+                            qty: it.qty,
+                            unit_price: parseFloat(it.unit_price),
+                            discount_pct: parseFloat(it.discount_pct) || 0,
+                            total: parseFloat(it.total),
+                        };
+                    }),
                 };
                 if (!this.form.items.length) this.form.items = [this.blankItem()];
                 this.formErrors = [];
@@ -759,18 +790,23 @@
                 const prod = this.products.find(p => p.id === pid);
                 if (prod) {
                     this.form.items[idx].product_name = prod.name;
+                    this.form.items[idx].product_search = `[${prod.code}] ${prod.name}`;
                     const units = prod.unit_conversions || [];
                     // Default to first unit (base unit)
-                    const first = units[0] || { unit_name: prod.unit, conversion_qty: 1, sell_price: prod.retail_price };
-                    this.form.items[idx].unit_label     = first.unit_name;
+                    const first = units[0] || {
+                        unit_name: prod.unit,
+                        conversion_qty: 1,
+                        sell_price: prod.retail_price
+                    };
+                    this.form.items[idx].unit_label = first.unit_name;
                     this.form.items[idx].conversion_qty = parseFloat(first.conversion_qty) || 1;
-                    this.form.items[idx].unit_price     = parseFloat(first.sell_price) || parseFloat(prod.retail_price);
+                    this.form.items[idx].unit_price = parseFloat(first.sell_price) || parseFloat(prod.retail_price);
                 }
                 this.calcItem(idx);
             },
 
             onUnitChange(idx) {
-                const pid  = parseInt(this.form.items[idx].product_id);
+                const pid = parseInt(this.form.items[idx].product_id);
                 const prod = this.products.find(p => p.id === pid);
                 if (!prod) return;
                 const selectedUnit = this.form.items[idx].unit_label;
@@ -778,7 +814,7 @@
                 const found = units.find(u => u.unit_name === selectedUnit);
                 if (found) {
                     this.form.items[idx].conversion_qty = parseFloat(found.conversion_qty) || 1;
-                    this.form.items[idx].unit_price     = parseFloat(found.sell_price) || 0;
+                    this.form.items[idx].unit_price = parseFloat(found.sell_price) || 0;
                 }
                 this.calcItem(idx);
             },
@@ -846,8 +882,7 @@
                         window.location.reload();
                     } else {
                         this.formErrors = data.errors ?
-                            Object.values(data.errors).flat() :
-                            [data.message || 'Terjadi kesalahan.'];
+                            Object.values(data.errors).flat() : [data.message || 'Terjadi kesalahan.'];
                     }
                 } catch (e) {
                     this.formErrors = ['Gagal terhubung ke server.'];
@@ -877,7 +912,8 @@
                         window.location.reload();
                     }
                 } catch (e) {
-                    /* ignore */ } finally {
+                    /* ignore */
+                } finally {
                     this.submitting = false;
                 }
             },

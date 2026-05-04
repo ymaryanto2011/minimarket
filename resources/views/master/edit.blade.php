@@ -4,9 +4,19 @@
 @section("page_subtitle")Ubah data produk: {{ $product->name }}@endsection
 
 @section("content")
+@php
+$conversionsData = optional($product->unitConversions)->map(function($c) {
+return [
+'unit_name' => $c->unit_name ?? '',
+'conversion_qty' => (string)($c->conversion_qty ?? ''),
+'sell_price' => (string)($c->sell_price ?? ''),
+'buy_price' => (string)($c->buy_price ?? ''),
+];
+})->values()->toArray() ?? [];
+@endphp
 <div class="max-w-3xl"
     x-data="{
-        conversions: @json($product->unitConversions->map(fn($c) => ['unit_name' => $c->unit_name, 'conversion_qty' => (string)$c->conversion_qty, 'sell_price' => (string)$c->sell_price, 'buy_price' => (string)$c->buy_price])->values()),
+        conversions: @json($conversionsData),
         addRow() { this.conversions.push({ unit_name:'', conversion_qty:'', sell_price:'', buy_price:'' }); },
         removeRow(i) { this.conversions.splice(i, 1); }
      }">
