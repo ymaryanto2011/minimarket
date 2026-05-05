@@ -17,7 +17,10 @@ class CategoryController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:categories,name',
+            'code' => 'required|string|max:5|unique:categories,code',
         ]);
+
+        $data['code'] = strtoupper($data['code']);
 
         Category::create($data);
 
@@ -28,7 +31,10 @@ class CategoryController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:100|unique:categories,name,' . $category->id,
+            'code' => 'required|string|max:5|unique:categories,code,' . $category->id,
         ]);
+
+        $data['code'] = strtoupper($data['code']);
 
         $category->update($data);
 

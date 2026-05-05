@@ -5,58 +5,59 @@
 @section('page_subtitle', 'Buat dan kelola penawaran harga untuk customer')
 
 @section('content')
+@php
+$__quotationsJson = json_encode($quotations->map(function($q) {
+return [
+'id' => $q->id,
+'quotation_no' => $q->quotation_no,
+'to_name' => $q->to_name,
+'date' => $q->date ? $q->date->format('Y-m-d') : null,
+'valid_until' => $q->valid_until ? $q->valid_until->format('Y-m-d') : null,
+'subtotal' => (float) $q->subtotal,
+'discount' => (float) $q->discount,
+'tax_rate' => (float) $q->tax_rate,
+'tax_amount' => (float) $q->tax_amount,
+'total' => (float) $q->total,
+'notes' => $q->notes,
+'status' => $q->status,
+'created_by' => $q->created_by,
+'creator' => $q->creator ? ['name' => $q->creator->name] : null,
+'items' => $q->items->map(fn($i) => [
+'id' => $i->id,
+'product_id' => $i->product_id,
+'product_name' => $i->product_name,
+'unit_label' => $i->unit_label,
+'conversion_qty' => (float) $i->conversion_qty,
+'qty' => $i->qty,
+'unit_price' => (float) $i->unit_price,
+'discount_pct' => (float) $i->discount_pct,
+'total' => (float) $i->total,
+])->values()->all(),
+];
+})->values(), JSON_HEX_TAG);
+
+$__productsJson = json_encode($products->map(fn($p) => [
+'id' => $p->id,
+'code' => $p->code,
+'name' => $p->name,
+'retail_price' => (float) $p->retail_price,
+'wholesale_price' => (float) $p->wholesale_price,
+'unit' => $p->unit,
+'unit_conversions' => $p->allUnits(),
+])->values(), JSON_HEX_TAG);
+
+$__storeJson = json_encode($store ? [
+'name' => $store->name,
+'address' => $store->address,
+'phone' => $store->phone,
+'owner_name' => $store->owner_name,
+'bank_accounts' => $store->bank_accounts ?? [],
+] : null, JSON_HEX_TAG);
+@endphp
 <script>
-    window.__quotations = {
-        !!json_encode($quotations - > map(function($q) {
-            return [
-                'id' => $q - > id,
-                'quotation_no' => $q - > quotation_no,
-                'to_name' => $q - > to_name,
-                'date' => $q - > date ? $q - > date - > format('Y-m-d') : null,
-                'valid_until' => $q - > valid_until ? $q - > valid_until - > format('Y-m-d') : null,
-                'subtotal' => (float) $q - > subtotal,
-                'discount' => (float) $q - > discount,
-                'tax_rate' => (float) $q - > tax_rate,
-                'tax_amount' => (float) $q - > tax_amount,
-                'total' => (float) $q - > total,
-                'notes' => $q - > notes,
-                'status' => $q - > status,
-                'created_by' => $q - > created_by,
-                'creator' => $q - > creator ? ['name' => $q - > creator - > name] : null,
-                'items' => $q - > items - > map(fn($i) => [
-                    'id' => $i - > id,
-                    'product_id' => $i - > product_id,
-                    'product_name' => $i - > product_name,
-                    'unit_label' => $i - > unit_label,
-                    'conversion_qty' => (float) $i - > conversion_qty,
-                    'qty' => $i - > qty,
-                    'unit_price' => (float) $i - > unit_price,
-                    'discount_pct' => (float) $i - > discount_pct,
-                    'total' => (float) $i - > total,
-                ]) - > values() - > all(),
-            ];
-        }) - > values(), JSON_HEX_TAG) !!
-    };
-    window.__products = {
-        !!json_encode($products - > map(fn($p) => [
-            'id' => $p - > id,
-            'code' => $p - > code,
-            'name' => $p - > name,
-            'retail_price' => (float) $p - > retail_price,
-            'wholesale_price' => (float) $p - > wholesale_price,
-            'unit' => $p - > unit,
-            'unit_conversions' => $p - > allUnits(),
-        ]) - > values(), JSON_HEX_TAG) !!
-    };
-    window.__store = {
-        !!json_encode($store ? [
-            'name' => $store - > name,
-            'address' => $store - > address,
-            'phone' => $store - > phone,
-            'owner_name' => $store - > owner_name,
-            'bank_accounts' => $store - > bank_accounts ?? [],
-        ] : null, JSON_HEX_TAG) !!
-    };
+    window.__quotations = <?= $__quotationsJson ?>;
+    window.__products = <?= $__productsJson ?>;
+    window.__store = <?= $__storeJson ?>;
     window.__nextNo = @json($nextNo);
     window.__csrfToken = @json(csrf_token());
     window.__routeStore = @json(route('quotation.store'));
@@ -278,9 +279,9 @@
                                 <tr class="bg-gray-700 text-white">
                                     <th class="text-center py-2 px-2 w-8">#</th>
                                     <th class="text-left py-2 px-3 min-w-48">Barang</th>
+                                    <th class="py-2 px-3 w-28">Satuan</th>
                                     <th class="text-right py-2 px-3 w-20">Qty</th>
                                     <th class="text-right py-2 px-3 w-32">Harga Satuan</th>
-                                    <th class="py-2 px-3 w-28">Satuan</th>
                                     <th class="text-right py-2 px-3 w-20">Diskon %</th>
                                     <th class="text-right py-2 px-3 w-32">Jumlah</th>
                                     <th class="w-8"></th>
@@ -290,28 +291,16 @@
                                 <template x-for="(item, idx) in form.items" :key="idx">
                                     <tr class="border-t hover:bg-gray-50">
                                         <td class="py-1.5 px-2 text-center text-gray-400" x-text="idx + 1"></td>
-                                        <td class="py-1.5 px-2" style="position:relative">
+                                        <td class="py-1.5 px-2">
                                             <input type="text"
                                                 x-model="item.product_search"
-                                                @focus="activeDropdownIdx = idx"
-                                                @input="activeDropdownIdx = idx"
+                                                @focus="activeDropdownIdx = idx; positionDropdown($event.target)"
+                                                @input="activeDropdownIdx = idx; positionDropdown($event.target)"
                                                 @keydown.escape="activeDropdownIdx = -1"
-                                                @blur="setTimeout(() => { if(activeDropdownIdx === idx) activeDropdownIdx = -1 }, 200)"
+                                                @blur="setTimeout(() => { activeDropdownIdx = -1 }, 200)"
                                                 placeholder="Ketik kode / nama barang..."
                                                 class="input-field text-xs py-1 w-full"
                                                 autocomplete="off">
-                                            <div x-show="activeDropdownIdx === idx"
-                                                style="position:absolute; z-index:9999; top:100%; left:0; min-width:100%; width:300px; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:220px; overflow-y:auto">
-                                                <template x-for="p in products.filter(p => !item.product_search || ('['+p.code+'] '+p.name).toLowerCase().includes(item.product_search.toLowerCase()))" :key="p.id">
-                                                    <div @mousedown.prevent="item.product_id = String(p.id); activeDropdownIdx = -1; onProductChange(idx)"
-                                                        style="padding:8px 12px; font-size:12px; cursor:pointer; border-bottom:1px solid #f3f4f6"
-                                                        :style="String(item.product_id) === String(p.id) ? 'background:#eff6ff; color:#1d4ed8; font-weight:600' : 'color:#374151'"
-                                                        x-text="'['+p.code+'] '+p.name">
-                                                    </div>
-                                                </template>
-                                                <div x-show="products.filter(p => !item.product_search || ('['+p.code+'] '+p.name).toLowerCase().includes(item.product_search.toLowerCase())).length === 0"
-                                                    style="padding:12px; font-size:12px; color:#9ca3af; text-align:center">Barang tidak ditemukan</div>
-                                            </div>
                                         </td>
                                         <td class="py-1.5 px-2">
                                             {{-- Unit dropdown: auto-populated from selected product's conversions --}}
@@ -355,6 +344,21 @@
                                 </template>
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Global product search dropdown (position:fixed avoids overflow-x-auto clipping) --}}
+                    <div x-show="activeDropdownIdx >= 0 && formModal"
+                        :style="`top:${dropdownTop}px; left:${dropdownLeft}px; width:${dropdownWidth}px`"
+                        style="position:fixed; z-index:9999; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:220px; overflow-y:auto">
+                        <template x-for="p in filteredProducts(activeDropdownIdx)" :key="p.id">
+                            <div @mousedown.prevent="form.items[activeDropdownIdx].product_id = String(p.id); onProductChange(activeDropdownIdx); activeDropdownIdx = -1"
+                                style="padding:8px 12px; font-size:12px; cursor:pointer; border-bottom:1px solid #f3f4f6"
+                                :style="activeDropdownIdx >= 0 && form.items[activeDropdownIdx] && String(form.items[activeDropdownIdx].product_id) === String(p.id) ? 'background:#eff6ff; color:#1d4ed8; font-weight:600' : 'color:#374151'"
+                                x-text="'['+p.code+'] '+p.name">
+                            </div>
+                        </template>
+                        <div x-show="filteredProducts(activeDropdownIdx).length === 0"
+                            style="padding:12px; font-size:12px; color:#9ca3af; text-align:center">Barang tidak ditemukan</div>
                     </div>
                 </div>
 
@@ -655,9 +659,26 @@
             grandTotal: 0,
 
             activeDropdownIdx: -1,
+            dropdownTop: 0,
+            dropdownLeft: 0,
+            dropdownWidth: 300,
 
             initApp() {
                 /* nothing */
+            },
+
+            positionDropdown(el) {
+                const rect = el.getBoundingClientRect();
+                this.dropdownTop = rect.bottom + 2;
+                this.dropdownLeft = rect.left;
+                this.dropdownWidth = Math.max(300, rect.width);
+            },
+
+            filteredProducts(idx) {
+                if (idx < 0 || !this.form.items || !this.form.items[idx]) return [];
+                const search = (this.form.items[idx].product_search || '').toLowerCase();
+                if (!search) return this.products;
+                return this.products.filter(p => ('[' + p.code + '] ' + p.name).toLowerCase().includes(search));
             },
 
             /* ---- Computed counts ---- */

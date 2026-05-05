@@ -7,6 +7,16 @@
 <div class="max-w-3xl"
     x-data="{
         conversions: @json(old('conversions', [])),
+        productCode: '{{ old('code') }}',
+        loadingCode: false,
+        fetchCode(categoryId) {
+            if (!categoryId) { this.productCode = ''; return; }
+            this.loadingCode = true;
+            fetch('/master/next-code?category_id=' + categoryId)
+                .then(r => r.json())
+                .then(data => { this.productCode = data.code; this.loadingCode = false; })
+                .catch(() => { this.loadingCode = false; });
+        },
         addRow() { this.conversions.push({ unit_name:'', conversion_qty:'', sell_price:'', buy_price:'' }); },
         removeRow(i) { this.conversions.splice(i, 1); }
      }">
@@ -24,25 +34,29 @@
             <h3 class="font-semibold text-gray-700 mb-3">Informasi Produk</h3>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="form-label">Kode Produk *</label>
-                    <input type="text" name="code" value="{{ old('code') }}" class="input-field" required>
-                </div>
-                <div>
-                    <label class="form-label">Nama Produk *</label>
-                    <input type="text" name="name" value="{{ old('name') }}" class="input-field" required>
-                </div>
-                <div>
                     <label class="form-label">Kategori *</label>
-                    <select name="category_id" class="input-field" required>
+                    <select name="category_id" class="input-field" required
+                        @change="fetchCode($event.target.value)">
                         <option value="">Pilih kategori</option>
                         @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }} ({{ $cat->code ?? '?' }})</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
                     <label class="form-label">Barcode</label>
                     <input type="text" name="barcode" value="{{ old('barcode') }}" class="input-field">
+                </div>
+                <div>
+                    <label class="form-label">Kode Produk *
+                        <span class="text-xs font-normal text-blue-500 ml-1" x-show="!loadingCode">← otomatis dari kategori, bisa diubah</span>
+                        <span class="text-xs font-normal text-gray-400 ml-1" x-show="loadingCode">memuat...</span>
+                    </label>
+                    <input type="text" name="code" x-model="productCode" class="input-field" required>
+                </div>
+                <div>
+                    <label class="form-label">Nama Produk *</label>
+                    <input type="text" name="name" value="{{ old('name') }}" class="input-field" required>
                 </div>
                 <div>
                     <label class="form-label">Stok Awal *</label>

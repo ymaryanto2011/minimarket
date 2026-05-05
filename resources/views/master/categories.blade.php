@@ -13,8 +13,16 @@
         <form method="POST" action="{{ route('categories.store') }}">
             @csrf
             @error('name') <p class="text-red-500 text-sm mb-2">{{ $message }}</p> @enderror
+            @error('code') <p class="text-red-500 text-sm mb-2">{{ $message }}</p> @enderror
             <div class="space-y-3">
-                <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama kategori..." class="input-field w-full" required>
+                <div>
+                    <label class="form-label">Nama Kategori *</label>
+                    <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama kategori..." class="input-field w-full" required>
+                </div>
+                <div>
+                    <label class="form-label">Kode Kategori * <span class="text-gray-400 font-normal">(maks. 5 huruf)</span></label>
+                    <input type="text" name="code" value="{{ old('code') }}" placeholder="Misal: SM, MK..." class="input-field w-full uppercase" maxlength="5" required style="text-transform:uppercase">
+                </div>
                 <button type="submit" class="btn-primary w-full">+ Tambah Kategori</button>
             </div>
         </form>
@@ -28,6 +36,7 @@
                 <thead>
                     <tr class="border-b bg-gray-50">
                         <th class="text-left py-2 px-3">#</th>
+                        <th class="text-left py-2 px-3">Kode</th>
                         <th class="text-left py-2 px-3">Nama Kategori</th>
                         <th class="text-right py-2 px-3">Jumlah Produk</th>
                         <th class="text-center py-2 px-3">Aksi</th>
@@ -38,8 +47,12 @@
                     <tr class="border-b hover:bg-gray-50" x-data="{ editing: false }">
                         <td class="py-2 px-3 text-gray-500">{{ $i + 1 }}</td>
                         <td class="py-2 px-3">
+                            <span x-show="!editing" class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded font-mono">{{ $category->code ?? '-' }}</span>
+                            <input x-show="editing" type="text" form="edit-form-{{ $category->id }}" name="code" value="{{ $category->code }}" class="input-field py-1 w-20 uppercase" maxlength="5" required style="text-transform:uppercase">
+                        </td>
+                        <td class="py-2 px-3">
                             <span x-show="!editing" class="font-medium">{{ $category->name }}</span>
-                            <form x-show="editing" method="POST" action="{{ route('categories.update', $category) }}" class="flex gap-2">
+                            <form x-show="editing" id="edit-form-{{ $category->id }}" method="POST" action="{{ route('categories.update', $category) }}" class="flex gap-2">
                                 @csrf @method('PUT')
                                 <input type="text" name="name" value="{{ $category->name }}" class="input-field py-1 flex-1" required>
                                 <button type="submit" class="btn-primary text-xs py-1 px-2">Simpan</button>

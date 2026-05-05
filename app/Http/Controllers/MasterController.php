@@ -83,6 +83,29 @@ class MasterController extends Controller
         return redirect()->route('master.index')->with('success', 'Produk berhasil ditambahkan.');
     }
 
+    public function nextCode(Request $request)
+    {
+        $categoryId = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+        ])['category_id'];
+
+        $category = Category::findOrFail($categoryId);
+        $prefix = strtoupper($category->code ?? 'XX');
+
+        $max = Product::where('category_id', $categoryId)
+            ->where('code', 'like', $prefix . '-%')
+            ->get()
+            ->map(function ($p) use ($prefix) {
+                $suffix = substr($p->code, strlen($prefix) + 1);
+                return is_numeric($suffix) ? (int) $suffix : 0;
+            })
+            ->max();
+
+        $next = str_pad(($max ?? 0) + 1, 3, '0', STR_PAD_LEFT);
+
+        return response()->json(['code' => $prefix . '-' . $next]);
+    }
+
     public function edit(Product $product)
     {
         $categories = Category::orderBy('name')->get();

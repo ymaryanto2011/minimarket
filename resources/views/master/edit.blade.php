@@ -34,8 +34,9 @@ return [
             <h3 class="font-semibold text-gray-700 mb-3">Informasi Produk</h3>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="form-label">Kode Produk *</label>
-                    <input type="text" name="code" value="{{ old('code', $product->code) }}" class="input-field" required>
+                    <label class="form-label">Kode Produk</label>
+                    <input type="text" name="code" value="{{ old('code', $product->code) }}" class="input-field bg-gray-100 text-gray-500 cursor-not-allowed" readonly>
+                    <p class="text-xs text-gray-400 mt-1">Kode tidak dapat diubah setelah disimpan.</p>
                 </div>
                 <div>
                     <label class="form-label">Nama Produk *</label>

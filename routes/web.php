@@ -23,6 +23,7 @@ Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.chec
 Route::get('/master', [MasterController::class, 'index'])->name('master.index');
 Route::get('/master/create', [MasterController::class, 'create'])->name('master.create');
 Route::post('/master', [MasterController::class, 'store'])->name('master.store');
+Route::get('/master/next-code', [MasterController::class, 'nextCode'])->name('master.next-code');
 Route::get('/master/{product}/edit', [MasterController::class, 'edit'])->name('master.edit');
 Route::put('/master/{product}', [MasterController::class, 'update'])->name('master.update');
 Route::delete('/master/{product}', [MasterController::class, 'destroy'])->name('master.destroy');
