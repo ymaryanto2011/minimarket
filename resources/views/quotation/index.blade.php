@@ -20,6 +20,8 @@ return [
 'total' => (float) $q->total,
 'notes' => $q->notes,
 'status' => $q->status,
+'is_custom' => (bool) $q->is_custom,
+'transaction_id' => $q->transaction_id,
 'created_by' => $q->created_by,
 'creator' => $q->creator ? ['name' => $q->creator->name] : null,
 'items' => $q->items->map(fn($i) => [
@@ -64,6 +66,7 @@ $__storeJson = json_encode($store ? [
     window.__routeUpdate = '/quotation/';
     window.__routeDelete = '/quotation/';
     window.__routePdf = '/quotation/';
+    window.__routeConvert = '/quotation/';
 </script>
 
 <div x-data="quotationApp()" x-init="initApp()">
@@ -99,12 +102,21 @@ $__storeJson = json_encode($store ? [
                         x-text="quotations.length"></span>
                 </button>
             </div>
-            <button @click="openCreate()" class="btn-primary text-sm ml-4 whitespace-nowrap flex items-center gap-1.5 my-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Buat Penawaran
-            </button>
+            <div class="flex gap-2 my-2 ml-4 whitespace-nowrap">
+                <button @click="openCreate(false)" class="btn-primary text-sm flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Buat Penawaran
+                </button>
+                <button @click="openCreate(true)"
+                    class="text-sm px-3 py-1.5 rounded-lg border border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100 transition font-medium flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Penawaran Custom
+                </button>
+            </div>
         </div>
     </div>
 
@@ -158,13 +170,31 @@ $__storeJson = json_encode($store ? [
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    {{-- PDF --}}
+                                    {{-- PDF / Cetak --}}
                                     <a :href="`/quotation/${q.id}/pdf`" title="PDF" target="_blank"
+                                        x-show="q.status !== 'paid'"
                                         class="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                         </svg>
                                     </a>
+                                    {{-- Cetak Bukti Bayar (only for paid) --}}
+                                    <a :href="`/quotation/${q.id}/pdf`" title="Cetak Bukti Bayar" target="_blank"
+                                        x-show="q.status === 'paid'"
+                                        class="p-1.5 text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50 rounded transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                    </a>
+                                    {{-- Catat Penjualan (paid, non-custom, not yet converted) --}}
+                                    <button @click="doConvertToTransaction(q)"
+                                        title="Catat sebagai Penjualan &amp; Kurangi Stok"
+                                        x-show="q.status === 'paid' && !q.is_custom && !q.transaction_id"
+                                        class="p-1.5 text-indigo-400 hover:text-indigo-700 hover:bg-indigo-50 rounded transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                    </button>
                                     {{-- Delete --}}
                                     <button @click="confirmDelete(q)" title="Hapus"
                                         class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
@@ -201,10 +231,13 @@ $__storeJson = json_encode($store ? [
             {{-- Header --}}
             <div class="flex items-start justify-between p-5 border-b">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800"
-                        x-text="formMode === 'create' ? 'Buat Penawaran Baru' : 'Edit Penawaran'"></h2>
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <span x-text="formMode === 'create' ? 'Buat Penawaran Baru' : 'Edit Penawaran'"></span>
+                        <span x-show="form.is_custom"
+                            class="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Custom</span>
+                    </h2>
                     <p class="text-sm text-gray-500 mt-0.5"
-                        x-text="formMode === 'create' ? 'Isi form untuk membuat penawaran baru' : ('Edit: ' + form.quotation_no)"></p>
+                        x-text="formMode === 'create' ? (form.is_custom ? 'Item bebas diketik manual tanpa database barang' : 'Isi form untuk membuat penawaran baru') : ('Edit: ' + form.quotation_no)"></p>
                 </div>
                 <button @click="formModal = false" class="text-gray-400 hover:text-gray-600 transition ml-4">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,13 +298,26 @@ $__storeJson = json_encode($store ? [
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <label class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Detail Barang</label>
-                        <button type="button" @click="addItem()"
-                            class="text-blue-600 hover:text-blue-800 text-xs font-medium flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                            </svg>
-                            Tambah Baris
-                        </button>
+                        <div class="flex items-center gap-2">
+                            {{-- Mode Custom toggle (only available when not a locked-status edit) --}}
+                            <template x-if="formMode === 'create' || ['draft','submit','approved'].includes(form.status)">
+                                <button type="button" @click="form.is_custom = !form.is_custom; resetItems()"
+                                    :class="form.is_custom ? 'bg-purple-100 text-purple-700 border-purple-300' : 'bg-gray-100 text-gray-600 border-gray-300'"
+                                    class="text-xs px-2.5 py-1 rounded border font-medium flex items-center gap-1 transition">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span x-text="form.is_custom ? 'Mode Custom ✓' : 'Mode Custom'"></span>
+                                </button>
+                            </template>
+                            <button type="button" @click="addItem()"
+                                class="text-blue-600 hover:text-blue-800 text-xs font-medium flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah Baris
+                            </button>
+                        </div>
                     </div>
                     <div class="border rounded-lg overflow-x-auto">
                         <table class="w-full text-xs min-w-max">
@@ -291,32 +337,50 @@ $__storeJson = json_encode($store ? [
                                 <template x-for="(item, idx) in form.items" :key="idx">
                                     <tr class="border-t hover:bg-gray-50">
                                         <td class="py-1.5 px-2 text-center text-gray-400" x-text="idx + 1"></td>
+                                        {{-- Barang column: product search (non-custom) or free text (custom) --}}
                                         <td class="py-1.5 px-2">
-                                            <input type="text"
-                                                x-model="item.product_search"
-                                                @focus="activeDropdownIdx = idx; positionDropdown($event.target)"
-                                                @input="activeDropdownIdx = idx; positionDropdown($event.target)"
-                                                @keydown.escape="activeDropdownIdx = -1"
-                                                @blur="setTimeout(() => { activeDropdownIdx = -1 }, 200)"
-                                                placeholder="Ketik kode / nama barang..."
-                                                class="input-field text-xs py-1 w-full"
-                                                autocomplete="off">
+                                            <template x-if="!form.is_custom">
+                                                <input type="text"
+                                                    x-model="item.product_search"
+                                                    @focus="activeDropdownIdx = idx; positionDropdown($event.target)"
+                                                    @input="activeDropdownIdx = idx; positionDropdown($event.target)"
+                                                    @keydown.escape="activeDropdownIdx = -1"
+                                                    @blur="setTimeout(() => { activeDropdownIdx = -1 }, 200)"
+                                                    placeholder="Ketik kode / nama barang..."
+                                                    class="input-field text-xs py-1 w-full"
+                                                    autocomplete="off">
+                                            </template>
+                                            <template x-if="form.is_custom">
+                                                <input type="text"
+                                                    x-model="item.product_name"
+                                                    placeholder="Nama barang bebas..."
+                                                    class="input-field text-xs py-1 w-full"
+                                                    autocomplete="off">
+                                            </template>
                                         </td>
+                                        {{-- Satuan column: select from product units (non-custom) or free text (custom) --}}
                                         <td class="py-1.5 px-2">
-                                            {{-- Unit dropdown: auto-populated from selected product's conversions --}}
-                                            <select x-model="item.unit_label" @change="onUnitChange(idx)"
-                                                class="input-field text-xs py-1 w-full"
-                                                :disabled="!item.product_id">
-                                                <template x-if="item.product_id">
-                                                    <template x-for="u in getProductUnits(item.product_id)" :key="u.unit_name">
-                                                        <option :value="u.unit_name" x-text="u.unit_name"
-                                                            :selected="u.unit_name === item.unit_label"></option>
+                                            <template x-if="!form.is_custom">
+                                                <select x-model="item.unit_label" @change="onUnitChange(idx)"
+                                                    class="input-field text-xs py-1 w-full"
+                                                    :disabled="!item.product_id">
+                                                    <template x-if="item.product_id">
+                                                        <template x-for="u in getProductUnits(item.product_id)" :key="u.unit_name">
+                                                            <option :value="u.unit_name" x-text="u.unit_name"
+                                                                :selected="u.unit_name === item.unit_label"></option>
+                                                        </template>
                                                     </template>
-                                                </template>
-                                                <template x-if="!item.product_id">
-                                                    <option value="">—</option>
-                                                </template>
-                                            </select>
+                                                    <template x-if="!item.product_id">
+                                                        <option value="">—</option>
+                                                    </template>
+                                                </select>
+                                            </template>
+                                            <template x-if="form.is_custom">
+                                                <input type="text"
+                                                    x-model="item.unit_label"
+                                                    placeholder="Satuan..."
+                                                    class="input-field text-xs py-1 w-full">
+                                            </template>
                                         </td>
                                         <td class="py-1.5 px-2">
                                             <input type="number" x-model.number="item.qty" @input="calcItem(idx)"
@@ -347,7 +411,7 @@ $__storeJson = json_encode($store ? [
                     </div>
 
                     {{-- Global product search dropdown (position:fixed avoids overflow-x-auto clipping) --}}
-                    <div x-show="activeDropdownIdx >= 0 && formModal"
+                    <div x-show="activeDropdownIdx >= 0 && formModal && !form.is_custom"
                         :style="`top:${dropdownTop}px; left:${dropdownLeft}px; width:${dropdownWidth}px`"
                         style="position:fixed; z-index:9999; background:#fff; border:1px solid #d1d5db; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.15); max-height:220px; overflow-y:auto">
                         <template x-for="p in filteredProducts(activeDropdownIdx)" :key="p.id">
@@ -745,6 +809,7 @@ $__storeJson = json_encode($store ? [
                     date: today,
                     valid_until: nextWeek,
                     status: 'draft',
+                    is_custom: false,
                     notes: '',
                     discount: 0,
                     tax_rate: 0,
@@ -752,9 +817,10 @@ $__storeJson = json_encode($store ? [
                 };
             },
 
-            openCreate() {
+            openCreate(isCustom = false) {
                 this.formMode = 'create';
                 this.form = this.defaultForm();
+                this.form.is_custom = isCustom;
                 this.formErrors = [];
                 this.calcTotals();
                 this.formModal = true;
@@ -769,6 +835,7 @@ $__storeJson = json_encode($store ? [
                     date: q.date ? q.date.split('T')[0] : q.date,
                     valid_until: q.valid_until ? q.valid_until.split('T')[0] : q.valid_until,
                     status: q.status,
+                    is_custom: q.is_custom || false,
                     notes: q.notes || '',
                     discount: parseFloat(q.discount) || 0,
                     tax_rate: parseFloat(q.tax_rate) || 0,
@@ -791,6 +858,11 @@ $__storeJson = json_encode($store ? [
                 this.formErrors = [];
                 this.calcTotals();
                 this.formModal = true;
+            },
+
+            resetItems() {
+                this.form.items = [this.blankItem()];
+                this.calcTotals();
             },
 
             openView(q) {
@@ -861,27 +933,50 @@ $__storeJson = json_encode($store ? [
                 if (!this.form.to_name.trim()) this.formErrors.push('Nama customer wajib diisi.');
                 if (!this.form.date) this.formErrors.push('Tanggal wajib diisi.');
                 if (!this.form.valid_until) this.formErrors.push('Tanggal berlaku hingga wajib diisi.');
-                if (!this.form.items.some(i => i.product_id)) this.formErrors.push('Minimal 1 barang harus dipilih.');
+                if (this.form.is_custom) {
+                    if (!this.form.items.some(i => (i.product_name || '').trim())) this.formErrors.push('Minimal 1 nama barang harus diisi.');
+                } else {
+                    if (!this.form.items.some(i => i.product_id)) this.formErrors.push('Minimal 1 barang harus dipilih.');
+                }
                 if (this.formErrors.length) return;
 
                 this.submitting = true;
+                let filteredItems;
+                if (this.form.is_custom) {
+                    filteredItems = this.form.items
+                        .filter(i => (i.product_name || '').trim())
+                        .map(i => ({
+                            product_id: i.product_id || null,
+                            product_name: i.product_name,
+                            unit_label: i.unit_label || '',
+                            conversion_qty: parseFloat(i.conversion_qty) || 1,
+                            qty: i.qty,
+                            unit_price: i.unit_price,
+                            discount_pct: i.discount_pct,
+                        }));
+                } else {
+                    filteredItems = this.form.items
+                        .filter(i => i.product_id)
+                        .map(i => ({
+                            product_id: i.product_id,
+                            product_name: i.product_name,
+                            unit_label: i.unit_label || '',
+                            conversion_qty: parseFloat(i.conversion_qty) || 1,
+                            qty: i.qty,
+                            unit_price: i.unit_price,
+                            discount_pct: i.discount_pct,
+                        }));
+                }
                 const payload = {
                     to_name: this.form.to_name,
                     date: this.form.date,
                     valid_until: this.form.valid_until,
                     status: this.form.status,
+                    is_custom: this.form.is_custom,
                     notes: this.form.notes,
                     discount: this.form.discount,
                     tax_rate: this.form.tax_rate,
-                    items: this.form.items.filter(i => i.product_id).map(i => ({
-                        product_id: i.product_id,
-                        product_name: i.product_name,
-                        unit_label: i.unit_label || '',
-                        conversion_qty: parseFloat(i.conversion_qty) || 1,
-                        qty: i.qty,
-                        unit_price: i.unit_price,
-                        discount_pct: i.discount_pct,
-                    })),
+                    items: filteredItems,
                 };
 
                 const isCreate = this.formMode === 'create';
@@ -907,6 +1002,31 @@ $__storeJson = json_encode($store ? [
                     }
                 } catch (e) {
                     this.formErrors = ['Gagal terhubung ke server.'];
+                } finally {
+                    this.submitting = false;
+                }
+            },
+
+            /* ---- Convert to Transaction ---- */
+            async doConvertToTransaction(q) {
+                if (!confirm(`Catat penawaran ${q.quotation_no} sebagai penjualan dan kurangi stok produk?`)) return;
+                this.submitting = true;
+                try {
+                    const res = await fetch(window.__routeConvert + q.id + '/convert-to-transaction', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': window.__csrfToken,
+                        },
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Terjadi kesalahan saat mengonversi penawaran.');
+                    }
+                } catch (e) {
+                    alert('Gagal terhubung ke server.');
                 } finally {
                     this.submitting = false;
                 }

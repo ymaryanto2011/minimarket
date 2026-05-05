@@ -34,6 +34,7 @@ Route::get('/stock/masuk', [StockController::class, 'masuk'])->name('stock.masuk
 Route::post('/stock/masuk', [StockController::class, 'storeMasuk'])->name('stock.storeMasuk');
 Route::get('/stock/penyesuaian', [StockController::class, 'penyesuaian'])->name('stock.penyesuaian');
 Route::post('/stock/penyesuaian', [StockController::class, 'storePenyesuaian'])->name('stock.storePenyesuaian');
+Route::get('/stock/export-excel', [StockController::class, 'exportExcel'])->name('stock.exportExcel');
 
 // Penawaran
 Route::get('/quotation', [QuotationController::class, 'index'])->name('quotation.index');
@@ -43,12 +44,17 @@ Route::get('/quotation/{quotation}/edit', [QuotationController::class, 'edit'])-
 Route::put('/quotation/{quotation}', [QuotationController::class, 'update'])->name('quotation.update');
 Route::delete('/quotation/{quotation}', [QuotationController::class, 'destroy'])->name('quotation.destroy');
 Route::get('/quotation/{quotation}/pdf', [QuotationController::class, 'pdf'])->name('quotation.pdf');
+Route::post('/quotation/{quotation}/convert-to-transaction', [QuotationController::class, 'convertToTransaction'])->name('quotation.convert');
 Route::get('/quotation/{quotation}', [QuotationController::class, 'show'])->name('quotation.show');
 
 // Laporan
 Route::get('/report', [ReportController::class, 'index'])->name('report.index');
 Route::get('/report/harian', [ReportController::class, 'harian'])->name('report.harian');
 Route::get('/report/bulanan', [ReportController::class, 'bulanan'])->name('report.bulanan');
+Route::get('/report/harian/excel', [ReportController::class, 'exportHarianExcel'])->name('report.harian.excel');
+Route::get('/report/harian/pdf', [ReportController::class, 'exportHarianPdf'])->name('report.harian.pdf');
+Route::get('/report/bulanan/excel', [ReportController::class, 'exportBulananExcel'])->name('report.bulanan.excel');
+Route::get('/report/bulanan/pdf', [ReportController::class, 'exportBulananPdf'])->name('report.bulanan.pdf');
 
 // Barcode
 Route::get('/barcode', [BarcodeController::class, 'index'])->name('barcode.index');
@@ -70,4 +76,6 @@ Route::put('/categories/{category}', [CategoryController::class, 'update'])->nam
 Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
 // PWA Offline Fallback
-Route::get('/offline', function () { return view('offline'); })->name('offline');
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline');

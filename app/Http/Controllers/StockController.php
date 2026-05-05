@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\StokBarangExport;
 use App\Models\Product;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockController extends Controller
 {
@@ -106,5 +108,11 @@ class StockController extends Controller
         });
 
         return redirect()->route('stock.index', ['tab' => 'penyesuaian'])->with('success', 'Penyesuaian stok berhasil.');
+    }
+
+    public function exportExcel()
+    {
+        $filename = 'stok-barang-' . now()->format('Y-m-d') . '.xlsx';
+        return Excel::download(new StokBarangExport(), $filename);
     }
 }

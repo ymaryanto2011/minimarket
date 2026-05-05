@@ -4,7 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penawaran {{ $quotation->quotation_no }}</title>
+    <title>
+        @if($quotation->status === 'paid')
+        Faktur Penjualan {{ $quotation->quotation_no }}
+        @else
+        Penawaran {{ $quotation->quotation_no }}
+        @endif
+    </title>
     <style>
         * {
             box-sizing: border-box;
@@ -409,6 +415,27 @@
                 padding: 24px 32px;
             }
         }
+
+        /* ── Watermark LUNAS ── */
+        .paper {
+            position: relative;
+        }
+
+        .watermark-lunas {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 96px;
+            font-weight: 900;
+            color: rgba(22, 163, 74, 0.10);
+            letter-spacing: 12px;
+            pointer-events: none;
+            z-index: 10;
+            text-transform: uppercase;
+            white-space: nowrap;
+            user-select: none;
+        }
     </style>
 </head>
 
@@ -433,6 +460,10 @@
     <div class="page-wrapper">
         <div class="paper">
 
+            @if($quotation->status === 'paid')
+            <div class="watermark-lunas">LUNAS</div>
+            @endif
+
             {{-- Kop Surat --}}
             <div class="kop">
                 <div class="kop-left">
@@ -444,7 +475,13 @@
                     </div>
                 </div>
                 <div class="kop-right">
-                    <div class="doc-title">Penawaran Harga</div>
+                    <div class="doc-title">
+                        @if($quotation->status === 'paid')
+                        Faktur Penjualan
+                        @else
+                        Penawaran Harga
+                        @endif
+                    </div>
                     <div class="doc-no">{{ $quotation->quotation_no }}</div>
                     @php
                     $statusLabels = [

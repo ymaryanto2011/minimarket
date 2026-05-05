@@ -21,6 +21,8 @@ class Quotation extends Model
         'total',
         'notes',
         'status',
+        'is_custom',
+        'transaction_id',
         'created_by',
     ];
 
@@ -40,6 +42,11 @@ class Quotation extends Model
     public function items()
     {
         return $this->hasMany(QuotationItem::class);
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
     }
 
     public function creator()
