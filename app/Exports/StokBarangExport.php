@@ -25,13 +25,15 @@ class StokBarangExport implements FromCollection, WithHeadings, WithStyles, With
     {
         return [
             $product->code,
+            $product->barcode ?? '-',
             $product->name,
             $product->category?->name ?? '-',
             $product->unit,
             (int) $product->stock,
             (int) $product->min_stock,
             $product->stock <= $product->min_stock ? 'Minimum!' : 'Aman',
-            'Rp ' . number_format($product->sell_price ?? 0, 0, ',', '.'),
+            'Rp ' . number_format($product->retail_price ?? 0, 0, ',', '.'),
+            'Rp ' . number_format($product->wholesale_price ?? 0, 0, ',', '.'),
             $product->updated_at->format('d/m/Y H:i'),
         ];
     }
@@ -40,13 +42,15 @@ class StokBarangExport implements FromCollection, WithHeadings, WithStyles, With
     {
         return [
             'Kode',
+            'Barcode',
             'Nama Barang',
             'Kategori',
             'Satuan',
             'Stok Saat Ini',
             'Stok Minimum',
             'Status',
-            'Harga Jual',
+            'Harga Jual Eceran',
+            'Harga Grosir',
             'Terakhir Update',
         ];
     }

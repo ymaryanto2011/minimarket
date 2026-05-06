@@ -1,9 +1,11 @@
-const CACHE = 'minipos-v1';
+const CACHE = 'minipos-v2';
 const OFFLINE_URL = '/offline';
 
 const PRECACHE = [
     '/',
+    '/login',
     '/offline',
+    '/pos',
     '/css/app.css',
     '/js/alpine.min.js',
 ];
@@ -36,8 +38,8 @@ self.addEventListener('fetch', event => {
     // Only handle same-origin GET requests
     if (req.method !== 'GET' || url.origin !== location.origin) return;
 
-    // Static assets (CSS/JS/fonts): cache-first
-    if (/\.(css|js|woff2?|ttf|svg|png|jpg|ico)$/.test(url.pathname)) {
+    // Static assets (CSS/JS/fonts/images): cache-first
+    if (/\.(css|js|woff2?|ttf|svg|png|jpg|ico|webp)$/.test(url.pathname)) {
         event.respondWith(
             caches.match(req).then(cached => cached || fetchAndCache(req))
         );

@@ -21,7 +21,37 @@
     <?php echo $__env->yieldContent('extra_css'); ?>
 </head>
 
+<?php
+$authUser = auth()->user();
+$isAdmin = $authUser && $authUser->role === 'admin';
+$isSupervisor = $authUser && $authUser->role === 'supervisor';
+$isCashier = $authUser && $authUser->role === 'cashier';
+?>
+
 <body class="bg-gray-100">
+
+    
+    <div id="pwa-install-banner"
+        style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;
+               background:linear-gradient(135deg,#1e3a5f,#2563eb);color:white;
+               padding:12px 16px;display:none;align-items:center;justify-content:space-between;gap:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <svg style="width:20px;height:20px;flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.5l-6-6m6 6l6-6m-6 6V5.5" />
+            </svg>
+            <span style="font-size:0.9rem;">Pasang MiniPOS di perangkat ini untuk pengalaman terbaik!</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;">
+            <button id="pwa-install-btn"
+                style="background:white;color:#1e3a5f;font-weight:700;font-size:0.8rem;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;">
+                Pasang
+            </button>
+            <button id="pwa-dismiss-btn"
+                style="background:rgba(255,255,255,.15);color:white;font-size:0.8rem;padding:6px 10px;border-radius:8px;border:none;cursor:pointer;">
+                Nanti
+            </button>
+        </div>
+    </div>
 
     
     <div id="toast-host"
@@ -65,6 +95,9 @@
         x-data="appLayout()"
         x-init="initLayout()">
 
+        <?php if($isCashier): ?><?php endif; ?>
+
+        <?php if(!$isCashier): ?>
         
         <div x-show="sidebarOpen && isMobile"
             x-cloak
@@ -108,6 +141,7 @@
             <nav class="py-4 px-2 space-y-0.5">
 
                 
+                <?php if(!$isCashier): ?>
                 <a href="<?php echo e(route('dashboard')); ?>"
                     :class="sidebarCollapsed ? 'justify-center px-2' : 'px-3'"
                     class="nav-link group relative flex items-center py-2.5 rounded-lg <?php if(request()->routeIs('dashboard')): ?> bg-blue-600 text-white <?php endif; ?>">
@@ -117,6 +151,7 @@
                     <span x-show="!sidebarCollapsed" class="ml-3 whitespace-nowrap">Dashboard</span>
                     <span x-show="sidebarCollapsed" x-cloak class="sidebar-tooltip">Dashboard</span>
                 </a>
+                <?php endif; ?>
 
                 
                 <a href="<?php echo e(route('pos.index')); ?>"
@@ -130,6 +165,7 @@
                 </a>
 
                 
+                <?php if($isAdmin): ?>
                 <a href="<?php echo e(route('master.index')); ?>"
                     :class="sidebarCollapsed ? 'justify-center px-2' : 'px-3'"
                     class="nav-link group relative flex items-center py-2.5 rounded-lg <?php if(request()->routeIs('master.*')): ?> bg-blue-600 text-white <?php endif; ?>">
@@ -139,8 +175,6 @@
                     <span x-show="!sidebarCollapsed" class="ml-3 whitespace-nowrap">Master Barang</span>
                     <span x-show="sidebarCollapsed" x-cloak class="sidebar-tooltip">Master Barang</span>
                 </a>
-
-                
                 <div x-show="!sidebarCollapsed" class="ml-4 space-y-1">
                     <a href="<?php echo e(route('categories.index')); ?>"
                         class="flex items-center p-2 pl-3 rounded-lg hover:bg-gray-800 text-sm text-gray-300 <?php if(request()->routeIs('categories.*')): ?> bg-gray-700 text-white <?php endif; ?>">
@@ -150,8 +184,10 @@
                         Kategori Barang
                     </a>
                 </div>
+                <?php endif; ?>
 
                 
+                <?php if(!$isCashier): ?>
                 <a href="<?php echo e(route('stock.index')); ?>"
                     :class="sidebarCollapsed ? 'justify-center px-2' : 'px-3'"
                     class="nav-link group relative flex items-center py-2.5 rounded-lg <?php if(request()->routeIs('stock.*')): ?> bg-blue-600 text-white <?php endif; ?>">
@@ -194,27 +230,23 @@
                     <span x-show="!sidebarCollapsed" class="ml-3 whitespace-nowrap">Cetak Barcode</span>
                     <span x-show="sidebarCollapsed" x-cloak class="sidebar-tooltip">Barcode</span>
                 </a>
+                <?php endif; ?>
 
                 
+                <?php if($isAdmin): ?>
                 <div class="border-t border-gray-800 pt-2 mt-4">
-
-                    
-                    <a x-show="sidebarCollapsed"
-                        x-cloak
-                        href="<?php echo e(route('setting.profile')); ?>"
-                        class="nav-link group relative flex items-center justify-center px-2 py-2.5 rounded-lg <?php if(request()->routeIs('setting.*')): ?> bg-blue-600 text-white <?php endif; ?>">
+                    <a x-show="sidebarCollapsed" x-cloak href="<?php echo e(route('setting.profile')); ?>"
+                        class="nav-link group relative flex items-center justify-center px-2 py-2.5 rounded-lg <?php if(request()->routeIs('setting.*')||request()->routeIs('users.*')): ?> bg-blue-600 text-white <?php endif; ?>">
                         <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <span class="sidebar-tooltip">Pengaturan</span>
                     </a>
-
-                    
                     <div x-show="!sidebarCollapsed"
-                        x-data="{ open: <?php echo e(request()->routeIs('setting.*') ? 'true' : 'false'); ?> }">
+                        x-data="{ open: <?php echo e((request()->routeIs('setting.*') || request()->routeIs('users.*')) ? 'true' : 'false'); ?> }">
                         <button @click="open = !open"
-                            class="w-full nav-link flex items-center px-3 py-2.5 rounded-lg <?php if(request()->routeIs('setting.*')): ?> bg-blue-600 text-white <?php endif; ?>">
+                            class="w-full nav-link flex items-center px-3 py-2.5 rounded-lg <?php if(request()->routeIs('setting.*')||request()->routeIs('users.*')): ?> bg-blue-600 text-white <?php endif; ?>">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -227,32 +259,75 @@
                         <div x-show="open" class="ml-4 mt-1 space-y-1">
                             <a href="<?php echo e(route('setting.profile')); ?>"
                                 class="flex items-center p-2 pl-3 rounded-lg hover:bg-gray-800 text-sm text-gray-300 <?php if(request()->routeIs('setting.profile')): ?> bg-gray-700 text-white <?php endif; ?>">
-                                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                                 Profil Toko
                             </a>
                             <a href="<?php echo e(route('setting.units')); ?>"
                                 class="flex items-center p-2 pl-3 rounded-lg hover:bg-gray-800 text-sm text-gray-300 <?php if(request()->routeIs('setting.units*')): ?> bg-gray-700 text-white <?php endif; ?>">
-                                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                 </svg>
                                 Satuan Barang
                             </a>
+                            <a href="<?php echo e(route('users.index')); ?>"
+                                class="flex items-center p-2 pl-3 rounded-lg hover:bg-gray-800 text-sm text-gray-300 <?php if(request()->routeIs('users.*')): ?> bg-gray-700 text-white <?php endif; ?>">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Manajemen User
+                            </a>
+                            <a href="<?php echo e(route('setting.backup')); ?>"
+                                class="flex items-center p-2 pl-3 rounded-lg hover:bg-gray-800 text-sm text-gray-300 <?php if(request()->routeIs('setting.backup*')): ?> bg-gray-700 text-white <?php endif; ?>">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Backup Database
+                            </a>
                         </div>
                     </div>
+                </div>
+                <?php endif; ?>
 
+                
+                <div class="border-t border-gray-800 pt-3 mt-4">
+                    <div x-show="!sidebarCollapsed" class="px-3 mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xs text-white
+                                <?php echo e($isAdmin ? 'bg-red-500' : ($isSupervisor ? 'bg-yellow-500' : 'bg-green-500')); ?>">
+                                <?php echo e(strtoupper(substr($authUser->name, 0, 1))); ?>
+
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-semibold text-white truncate"><?php echo e($authUser->name); ?></p>
+                                <p class="text-xs text-gray-400 capitalize"><?php echo e($authUser->role); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <form method="POST" action="<?php echo e(route('logout')); ?>">
+                        <?php echo csrf_field(); ?>
+                        <button type="submit"
+                            :class="sidebarCollapsed ? 'justify-center px-2' : 'px-3'"
+                            class="w-full nav-link flex items-center py-2.5 rounded-lg text-red-400 hover:bg-red-900/30 hover:text-red-300 transition">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span x-show="!sidebarCollapsed" class="ml-3 whitespace-nowrap">Keluar</span>
+                            <span x-show="sidebarCollapsed" x-cloak class="sidebar-tooltip">Keluar</span>
+                        </button>
+                    </form>
                 </div>
             </nav>
         </aside>
-
-        
+        <?php endif; ?> 
         <div id="app-main" class="flex-1 flex flex-col overflow-hidden min-w-0">
 
             
             <header class="bg-white shadow-sm border-b px-4 h-16 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center gap-3">
                     
+                    <?php if(!$isCashier): ?>
                     <button x-show="isMobile"
                         x-cloak
                         @click="sidebarOpen = true"
@@ -262,22 +337,41 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
+                    <?php endif; ?>
                     <div>
                         <h2 class="text-xl font-bold text-gray-800 leading-tight"><?php echo $__env->yieldContent('page_title'); ?></h2>
                         <p class="text-gray-500 text-xs"><?php echo $__env->yieldContent('page_subtitle'); ?></p>
                     </div>
                 </div>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
                     <?php echo $__env->yieldContent('header_actions'); ?>
-                    <div class="text-right hidden sm:block">
-                        <p class="font-semibold text-gray-800 text-sm">Admin User</p>
+                    
+                    <div class="text-right hidden sm:flex flex-col items-end">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-gray-800 text-sm"><?php echo e($authUser->name); ?></span>
+                            <span class="text-xs px-2 py-0.5 rounded-full font-medium
+                                <?php echo e($isAdmin ? 'bg-red-100 text-red-700' : ($isSupervisor ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700')); ?>">
+                                <?php echo e(ucfirst($authUser->role)); ?>
+
+                            </span>
+                        </div>
                         <p class="text-xs text-gray-500" id="current-time"></p>
                     </div>
-                    <button class="p-2 hover:bg-gray-100 rounded-full transition" title="Keluar">
-                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                        </svg>
-                    </button>
+                    
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white flex-shrink-0
+                        <?php echo e($isAdmin ? 'bg-red-500' : ($isSupervisor ? 'bg-yellow-500' : 'bg-green-500')); ?>">
+                        <?php echo e(strtoupper(substr($authUser->name, 0, 1))); ?>
+
+                    </div>
+                    
+                    <form method="POST" action="<?php echo e(route('logout')); ?>">
+                        <?php echo csrf_field(); ?>
+                        <button type="submit" class="p-2 hover:bg-red-50 hover:text-red-600 text-gray-500 rounded-full transition" title="Keluar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             </header>
 
@@ -445,19 +539,54 @@
 
     
     <script>
+        /* ── Service Worker ──────────────────────────────────── */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js', {
                         scope: '/'
                     })
                     .then(function() {
-                        console.log('[PWA] Service Worker registered');
+                        console.log('[PWA] SW registered');
                     })
                     .catch(function(e) {
-                        console.warn('[PWA] SW registration failed:', e);
+                        console.warn('[PWA] SW failed:', e);
                     });
             });
         }
+
+        /* ── PWA Install Banner ───────────────────────────────── */
+        (function() {
+            var deferredPrompt = null;
+            var banner = document.getElementById('pwa-install-banner');
+            var dismissed = sessionStorage.getItem('pwa-banner-dismissed');
+
+            if (!dismissed) {
+                window.addEventListener('beforeinstallprompt', function(e) {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    if (banner) banner.style.display = 'flex';
+                });
+            }
+
+            document.getElementById('pwa-install-btn') && document.getElementById('pwa-install-btn').addEventListener('click', function() {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(c) {
+                    if (banner) banner.style.display = 'none';
+                    deferredPrompt = null;
+                });
+            });
+
+            document.getElementById('pwa-dismiss-btn') && document.getElementById('pwa-dismiss-btn').addEventListener('click', function() {
+                if (banner) banner.style.display = 'none';
+                sessionStorage.setItem('pwa-banner-dismissed', '1');
+            });
+
+            window.addEventListener('appinstalled', function() {
+                if (banner) banner.style.display = 'none';
+                console.log('[PWA] App installed');
+            });
+        })();
     </script>
 
     <?php echo $__env->yieldContent('extra_js'); ?>

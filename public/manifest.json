@@ -1,13 +1,15 @@
 {
+    "id": "/",
     "name": "Minimarket POS System",
     "short_name": "MiniPOS",
     "description": "Sistem Point of Sales untuk Minimarket — Kasir, Stok, Laporan, Barcode, Penawaran",
-    "start_url": "/",
+    "start_url": "/?source=pwa",
     "scope": "/",
     "display": "standalone",
+    "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
     "orientation": "any",
     "theme_color": "#111827",
-    "background_color": "#f3f4f6",
+    "background_color": "#111827",
     "lang": "id",
     "icons": [
         {
@@ -37,7 +39,22 @@
             "description": "Lihat laporan penjualan",
             "url": "/report",
             "icons": [{ "src": "/images/icon-192x192.svg", "sizes": "192x192" }]
+        },
+        {
+            "name": "Stok Barang",
+            "short_name": "Stok",
+            "description": "Kelola stok barang",
+            "url": "/stock",
+            "icons": [{ "src": "/images/icon-192x192.svg", "sizes": "192x192" }]
+        },
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "description": "Lihat ringkasan penjualan",
+            "url": "/",
+            "icons": [{ "src": "/images/icon-192x192.svg", "sizes": "192x192" }]
         }
     ],
-    "categories": ["business", "productivity"]
+    "categories": ["business", "productivity"],
+    "prefer_related_applications": false
 }

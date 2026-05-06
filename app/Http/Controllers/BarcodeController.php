@@ -9,19 +9,10 @@ class BarcodeController extends Controller
 {
     public function index(Request $request)
     {
-        $products = collect();
+        $allProducts = Product::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'code', 'name', 'barcode', 'retail_price', 'unit']);
 
-        if ($request->filled('search')) {
-            $products = Product::where('is_active', true)
-                ->where(function ($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->search . '%')
-                        ->orWhere('code', 'like', '%' . $request->search . '%')
-                        ->orWhere('barcode', 'like', '%' . $request->search . '%');
-                })
-                ->orderBy('name')
-                ->get();
-        }
-
-        return view('barcode.index', compact('products'));
+        return view('barcode.index', compact('allProducts'));
     }
 }
