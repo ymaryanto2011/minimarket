@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ProductImportTemplateExport;
+use App\Imports\ProductImport;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Unit;
 use App\Models\StockMovement;
 use App\Models\ProductUnitConversion;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterController extends Controller
 {
@@ -161,5 +164,48 @@ class MasterController extends Controller
     {
         $product->update(['is_active' => false]);
         return redirect()->route('master.index')->with('success', 'Produk berhasil dinonaktifkan.');
+    }
+
+    // ── Download template Excel ───────────────────────────────────────────────
+    public function importTemplate()
+    {
+        return Excel::download(
+            new ProductImportTemplateExport(),
+            'template_import_barang.xlsx'
+        );
+    }
+
+    // ── Import dari Excel ─────────────────────────────────────────────────────
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+        ], [
+            'file.required' => 'File Excel wajib diunggah.',
+            'file.mimes'    => 'Format file harus .xlsx, .xls, atau .csv.',
+            'file.max'      => 'Ukuran file maksimal 5 MB.',
+        ]);
+
+        try {
+            $import = new ProductImport();
+            Excel::import($import, $request->file('file'));
+
+            $r = $import->result;
+            $msg = "Import selesai: {$r['imported']} produk baru, {$r['updated']} diperbarui, {$r['skipped']} dilewati.";
+
+            if (!empty($r['errors'])) {
+                $errorList = implode(' | ', array_slice($r['errors'], 0, 5));
+                if (count($r['errors']) > 5) {
+                    $errorList .= ' ... dan ' . (count($r['errors']) - 5) . ' error lainnya.';
+                }
+                return redirect()->route('master.index')
+                    ->with('warning', $msg . ' Error: ' . $errorList);
+            }
+
+            return redirect()->route('master.index')->with('success', $msg);
+        } catch (\Throwable $e) {
+            return redirect()->route('master.index')
+                ->with('error', 'Gagal memproses file: ' . $e->getMessage());
+        }
     }
 }

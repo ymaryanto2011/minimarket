@@ -508,32 +508,40 @@ $isCashier = $authUser && $authUser->role === 'cashier';
 
         /* ── Flash session → toast ────────────────────────────── */
         <?php if(session('success')): ?>
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(<?php echo json_encode(session('success'), 15, 512) ?>, 'success');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(<?php echo json_encode(session('success'), 15, 512) ?>, 'success');
+                }, {
+                    once: true
+                });
+            </script>
         <?php endif; ?>
         <?php if(session('error')): ?>
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(<?php echo json_encode(session('error'), 15, 512) ?>, 'error');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(<?php echo json_encode(session('error'), 15, 512) ?>, 'error');
+                }, {
+                    once: true
+                });
+            </script>
         <?php endif; ?>
         <?php if(session('warning')): ?>
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(<?php echo json_encode(session('warning'), 15, 512) ?>, 'warning');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(<?php echo json_encode(session('warning'), 15, 512) ?>, 'warning');
+                }, {
+                    once: true
+                });
+            </script>
         <?php endif; ?>
         <?php if(session('info')): ?>
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(<?php echo json_encode(session('info'), 15, 512) ?>, 'info');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(<?php echo json_encode(session('info'), 15, 512) ?>, 'info');
+                }, {
+                    once: true
+                });
+            </script>
         <?php endif; ?>
     </script>
 

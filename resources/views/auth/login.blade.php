@@ -13,7 +13,7 @@
         /* ── Background ─────────────────────────────────────────── */
         .login-bg {
             min-height: 100vh;
-            background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            background: linear-gradient(160deg, #ffffff 0%, #dbeafe 28%, #3b82f6 65%, #1d4ed8 100%);
             position: relative;
             overflow: hidden;
         }
@@ -29,7 +29,7 @@
         .particle {
             position: absolute;
             border-radius: 50%;
-            background: rgba(59, 130, 246, 0.15);
+            background: rgba(37, 99, 235, 0.18);
             animation: float linear infinite;
         }
 
@@ -60,20 +60,20 @@
             left: 0;
             right: 0;
             pointer-events: none;
-            opacity: 0.12;
+            opacity: 0.22;
         }
 
         /* ── Card ────────────────────────────────────────────────── */
         .login-card {
-            background: rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(30, 58, 138, 0.68);
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
             border-radius: 1.5rem;
             padding: 2.5rem 2rem;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 25px 60px rgba(29, 78, 216, 0.35), 0 4px 20px rgba(0,0,0,0.18);
         }
 
         .login-input {
@@ -99,7 +99,7 @@
 
         .login-input:-webkit-autofill,
         .login-input:-webkit-autofill:focus {
-            -webkit-box-shadow: 0 0 0 1000px #1e3a5f inset;
+            -webkit-box-shadow: 0 0 0 1000px #1e40af inset;
             -webkit-text-fill-color: #f1f5f9;
         }
 

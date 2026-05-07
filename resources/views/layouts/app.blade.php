@@ -511,32 +511,40 @@ $isCashier = $authUser && $authUser->role === 'cashier';
 
         /* ── Flash session → toast ────────────────────────────── */
         @if(session('success'))
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(@json(session('success')), 'success');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(@json(session('success')), 'success');
+                }, {
+                    once: true
+                });
+            </script>
         @endif
         @if(session('error'))
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(@json(session('error')), 'error');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(@json(session('error')), 'error');
+                }, {
+                    once: true
+                });
+            </script>
         @endif
         @if(session('warning'))
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(@json(session('warning')), 'warning');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(@json(session('warning')), 'warning');
+                }, {
+                    once: true
+                });
+            </script>
         @endif
         @if(session('info'))
-        document.addEventListener('alpine:initialized', function() {
-            window.toastApp && window.toastApp.add(@json(session('info')), 'info');
-        }, {
-            once: true
-        });
+            <script>
+                document.addEventListener('alpine:initialized', function() {
+                    window.toastApp && window.toastApp.add(@json(session('info')), 'info');
+                }, {
+                    once: true
+                });
+            </script>
         @endif
     </script>
 
