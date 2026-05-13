@@ -311,7 +311,7 @@
             </div>
 
             <p class="text-center text-blue-400/40 text-xs mt-4">
-                &copy; {{ date('Y') }} {{ config('app.name') }}
+                © 2026 - Maryanto-POS
             </p>
         </div>
     </div>

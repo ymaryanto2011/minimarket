@@ -1,7 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="96" fill="#111827"/>
-  <rect x="48" y="48" width="416" height="416" rx="64" fill="#1d4ed8"/>
-  <circle cx="256" cy="256" r="108" fill="none" stroke="white" stroke-width="20"/>
-  <path d="M196 256 L236 296 L320 212" stroke="white" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <text x="256" y="448" text-anchor="middle" font-family="sans-serif" font-size="52" font-weight="bold" fill="#93c5fd">POS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="MiniPOS icon">
+  <defs>
+    <linearGradient id="bg512" x1="58" y1="44" x2="456" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#14532d"/>
+    </linearGradient>
+    <linearGradient id="card512" x1="140" y1="114" x2="372" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7fee7"/>
+      <stop offset="1" stop-color="#dcfce7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="#0f172a"/>
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg512)"/>
+  <circle cx="390" cy="128" r="54" fill="#dcfce7" opacity="0.16"/>
+  <circle cx="152" cy="384" r="72" fill="#bbf7d0" opacity="0.18"/>
+  <path d="M160 146h192a32 32 0 0 1 32 32v150a42 42 0 0 1-42 42H170a42 42 0 0 1-42-42V178a32 32 0 0 1 32-32Z" fill="url(#card512)"/>
+  <path d="M198 146a58 58 0 0 1 116 0" fill="none" stroke="#14532d" stroke-width="22" stroke-linecap="round"/>
+  <path d="M176 230h158" stroke="#16a34a" stroke-width="26" stroke-linecap="round" opacity="0.92"/>
+  <path d="M176 286h92" stroke="#15803d" stroke-width="26" stroke-linecap="round" opacity="0.88"/>
+  <rect x="292" y="266" width="54" height="90" rx="14" fill="#166534"/>
+  <path d="M306 282v58M320 282v58M334 282v58" stroke="#dcfce7" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="368" cy="352" r="34" fill="#fef08a"/>
+  <path d="M356 352l10 10 18-24" fill="none" stroke="#14532d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

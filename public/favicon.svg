@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="MiniPOS favicon">
+  <defs>
+    <linearGradient id="bg64" x1="8" y1="7" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22c55e"/>
+      <stop offset="1" stop-color="#14532d"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0f172a"/>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="url(#bg64)"/>
+  <path d="M20 20h24a4 4 0 0 1 4 4v18a5 5 0 0 1-5 5H21a5 5 0 0 1-5-5V24a4 4 0 0 1 4-4Z" fill="#f0fdf4"/>
+  <path d="M25 20a7 7 0 0 1 14 0" fill="none" stroke="#14532d" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M22 30h20" stroke="#16a34a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M22 37h12" stroke="#15803d" stroke-width="4" stroke-linecap="round"/>
+  <rect x="36" y="35" width="7" height="11" rx="2" fill="#166534"/>
+  <path d="M38.5 37.5v6M41 37.5v6" stroke="#dcfce7" stroke-width="1.2" stroke-linecap="round"/>
+  <circle cx="46" cy="43" r="5" fill="#fef08a"/>
+  <path d="M44 43l1.3 1.4 2.8-3.4" fill="none" stroke="#14532d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
