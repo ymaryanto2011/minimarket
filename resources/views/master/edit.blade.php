@@ -5,21 +5,44 @@
 
 @section("content")
 @php
-$conversionsData = optional($product->unitConversions)->map(function($c) {
-return [
-'unit_name' => $c->unit_name ?? '',
-'conversion_qty' => (string)($c->conversion_qty ?? ''),
-'sell_price' => (string)($c->sell_price ?? ''),
-'buy_price' => (string)($c->buy_price ?? ''),
-];
-})->values()->toArray() ?? [];
+$conversionsData = $product->unitConversions->map(function($c) {
+    return [
+        'unit_name'      => $c->unit_name ?? '',
+        'conversion_qty' => (float)($c->conversion_qty ?? 0),
+        'sell_price'     => (int)($c->sell_price ?? 0),
+        'buy_price'      => (int)($c->buy_price ?? 0),
+    ];
+})->values()->toArray();
 @endphp
-<div class="max-w-3xl"
-    x-data="{
+<script>
+function editProductData() {
+    return {
         conversions: @json($conversionsData),
-        addRow() { this.conversions.push({ unit_name:'', conversion_qty:'', sell_price:'', buy_price:'' }); },
+        retailPrice: {{ (int)old('retail_price', $product->retail_price) }},
+        wholesalePrice: {{ (int)old('wholesale_price', $product->wholesale_price) }},
+        fmtNum(v) {
+            const n = parseInt(String(v).replace(/\D/g, '')) || 0;
+            return n > 0 ? n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+        },
+        parseNum(v) {
+            return parseInt(String(v).replace(/\D/g, '')) || 0;
+        },
+        handlePriceInput(field, event) {
+            const raw = this.parseNum(event.target.value);
+            this[field] = raw;
+            event.target.value = raw > 0 ? this.fmtNum(raw) : '';
+        },
+        handleConvPrice(row, field, event) {
+            const raw = this.parseNum(event.target.value);
+            row[field] = raw;
+            event.target.value = raw > 0 ? this.fmtNum(raw) : '';
+        },
+        addRow() { this.conversions.push({ unit_name:'', conversion_qty:'', sell_price:0, buy_price:0 }); },
         removeRow(i) { this.conversions.splice(i, 1); }
-     }">
+    };
+}
+</script>
+<div class="max-w-3xl" x-data="editProductData()">
 
     <form method="POST" action="{{ route("master.update", $product) }}">
         @csrf @method("PUT")
@@ -91,14 +114,20 @@ return [
                     <label class="form-label">Harga Jual Eceran *</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
-                        <input type="number" name="retail_price" value="{{ old('retail_price', $product->retail_price) }}" class="input-field pl-10" min="0" required>
+                        <input type="text" x-init="$el.value = fmtNum(retailPrice)"
+                            @input="handlePriceInput('retailPrice', $event)"
+                            class="input-field pl-10" placeholder="0" required>
+                        <input type="hidden" name="retail_price" :value="retailPrice">
                     </div>
                 </div>
                 <div>
                     <label class="form-label">Harga Grosir (satuan dasar) *</label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">Rp</span>
-                        <input type="number" name="wholesale_price" value="{{ old('wholesale_price', $product->wholesale_price) }}" class="input-field pl-10" min="0" required>
+                        <input type="text" x-init="$el.value = fmtNum(wholesalePrice)"
+                            @input="handlePriceInput('wholesalePrice', $event)"
+                            class="input-field pl-10" placeholder="0" required>
+                        <input type="hidden" name="wholesale_price" :value="wholesalePrice">
                     </div>
                 </div>
                 <div>
@@ -156,15 +185,21 @@ return [
                                 <td class="py-2 px-3">
                                     <div class="relative">
                                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                                        <input type="number" :name="`conversions[${i}][sell_price]`" x-model="row.sell_price"
-                                            class="input-field text-sm pl-8" min="0" placeholder="0">
+                                        <input type="text"
+                                            x-init="$el.value = fmtNum(row.sell_price)"
+                                            @input="handleConvPrice(row, 'sell_price', $event)"
+                                            class="input-field text-sm pl-8" placeholder="0">
+                                        <input type="hidden" :name="`conversions[${i}][sell_price]`" :value="row.sell_price">
                                     </div>
                                 </td>
                                 <td class="py-2 px-3">
                                     <div class="relative">
                                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">Rp</span>
-                                        <input type="number" :name="`conversions[${i}][buy_price]`" x-model="row.buy_price"
-                                            class="input-field text-sm pl-8" min="0" placeholder="0">
+                                        <input type="text"
+                                            x-init="$el.value = fmtNum(row.buy_price)"
+                                            @input="handleConvPrice(row, 'buy_price', $event)"
+                                            class="input-field text-sm pl-8" placeholder="0">
+                                        <input type="hidden" :name="`conversions[${i}][buy_price]`" :value="row.buy_price">
                                     </div>
                                 </td>
                                 <td class="py-2 px-3 text-center">

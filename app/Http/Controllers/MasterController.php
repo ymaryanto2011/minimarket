@@ -157,7 +157,7 @@ class MasterController extends Controller
             }
         }
 
-        return redirect()->route('master.index')->with('success', 'Produk berhasil diperbarui.');
+        return redirect()->route('master.edit', $product)->with('success', 'Produk "' . $product->name . '" berhasil diperbarui.');
     }
 
     public function destroy(Product $product)
